@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Экстремальный туризм · Климова Полина</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --clay: #b08968;
+    --clay-deep: #8c6a4f;
+    --sand: #e8dcc8;
+    --rose: #d9a7a0;
+    --sage: #a8b5a0;
+    --sky: #a7bed3;
+    --graphite: #3a3a3a;
+    --ink: #2b2620;
+    --cream: #f5efe4;
+    --paper: #faf6ee;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--graphite);
+    color: #fff;
+  }
+
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(60px) scale(0.98);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.8s;
+    padding: 6vh 6vw;
+    will-change: opacity, transform;
+  }
+
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0) scale(1);
+    z-index: 2;
+  }
+
+  .slide.leaving {
+    opacity: 0;
+    transform: translateX(-60px) scale(0.98);
+    z-index: 1;
+  }
+
+  /* ===== BACKGROUNDS ===== */
+  .bg-photo {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: -2;
+  }
+
+  .bg-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(43,38,32,0.35) 0%, rgba(43,38,32,0.55) 100%);
+  }
+
+  .bg-color { position: absolute; inset: 0; z-index: -1; }
+  .bg-sage   { background: linear-gradient(135deg, #a8b5a0 0%, #7e8c6a 100%); }
+  .bg-sky    { background: linear-gradient(135deg, #a7bed3 0%, #6a8fa8 100%); }
+  .bg-cream  { background: linear-gradient(135deg, #f5efe4 0%, #e8dcc8 100%); }
+  .bg-graph  { background: linear-gradient(135deg, #3a3a3a 0%, #2b2620 100%); }
+
+  .bg-cream .slide, .bg-cream { color: var(--ink); }
+  .bg-cream h2, .bg-cream h3 { color: var(--ink); }
+
+  /* ===== TYPOGRAPHY ===== */
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.3em;
+  }
+
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.4em;
+    color: #fff;
+  }
+
+  h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(0.9rem, 1.5vw, 1.15rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1em;
+    opacity: 0.9;
+  }
+
+  p {
+    font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+    line-height: 1.65;
+    font-weight: 300;
+    margin-bottom: 0.8em;
+    max-width: 65ch;
+  }
+
+  .lead { font-size: clamp(1rem, 1.6vw, 1.2rem); font-weight: 400; }
+
+  .label {
+    display: inline-block;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.35em 0.9em;
+    border-radius: 100px;
+    background: rgba(176,137,104,0.35);
+    border: 1px solid rgba(255,255,255,0.2);
+    margin-bottom: 1em;
+    backdrop-filter: blur(8px);
+  }
+
+  .bg-cream .label { background: rgba(176,137,104,0.2); border-color: rgba(43,38,32,0.15); }
+
+  /* ===== PANELS ===== */
+  .panel {
+    background: rgba(176, 137, 104, 0.28);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    padding: 1.4em 1.6em;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  .bg-cream .panel {
+    background: rgba(176,137,104,0.18);
+    border-color: rgba(43,38,32,0.12);
+  }
+
+  .panel h3 { color: var(--sand); }
+  .bg-cream .panel h3 { color: var(--clay-deep); }
+
+  /* ===== LAYOUTS ===== */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3vw;
+    align-items: center;
+    width: 100%;
+  }
+
+  .split-60-40 {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 3vw;
+    align-items: center;
+    width: 100%;
+  }
+
+  .cards-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2vw;
+    margin-top: 2vh;
+  }
+
+  .card {
+    background: rgba(176,137,104,0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 1.2em;
+    transition: transform 0.3s;
+  }
+  .card:hover { transform: translateY(-4px); }
+  .card h3 { font-size: 0.85rem; margin-bottom: 0.6em; }
+  .card p  { font-size: 0.8rem; opacity: 0.9; margin-bottom: 0; }
+
+  .photo-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1vw;
+    margin-top: 2vh;
+  }
+
+  .photo-row img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    border-radius: 10px;
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+    animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .photo-row img:nth-child(1) { animation-delay: 0.15s; }
+  .photo-row img:nth-child(2) { animation-delay: 0.3s; }
+  .photo-row img:nth-child(3) { animation-delay: 0.45s; }
+  .photo-row img:nth-child(4) { animation-delay: 0.6s; }
+  .photo-row img:nth-child(5) { animation-delay: 0.75s; }
+  .photo-row img:nth-child(6) { animation-delay: 0.9s; }
+
+  .photo-grid-6 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1vw;
+    width: 100%;
+    margin-top: 2vh;
+  }
+
+  .photo-grid-6 img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    opacity: 0;
+    transform: translateY(24px) scale(0.95);
+    animation: fadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .photo-grid-6 img:nth-child(1) { animation-delay: 0.1s; }
+  .photo-grid-6 img:nth-child(2) { animation-delay: 0.2s; }
+  .photo-grid-6 img:nth-child(3) { animation-delay: 0.3s; }
+  .photo-grid-6 img:nth-child(4) { animation-delay: 0.4s; }
+  .photo-grid-6 img:nth-child(5) { animation-delay: 0.5s; }
+  .photo-grid-6 img:nth-child(6) { animation-delay: 0.6s; }
+
+  .photo-single {
+    width: 100%;
+    height: 100%;
+    min-height: 40vh;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .photo-wide {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .map-box {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+  }
+
+  .map-box img {
+    max-width: 100%;
+    max-height: 38vh;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 2vw;
+    margin-top: 1.5vh;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .stat-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700;
+    color: var(--sand);
+    line-height: 1;
+  }
+  .bg-cream .stat-value { color: var(--clay-deep); }
+
+  .stat-label {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 0.3em;
+    letter-spacing: 0.05em;
+  }
+
+  .list-clean { list-style: none; }
+  .list-clean li {
+    position: relative;
+    padding-left: 1.4em;
+    margin-bottom: 0.6em;
+    font-size: clamp(0.85rem, 1.3vw, 1rem);
+    line-height: 1.5;
+  }
+  .list-clean li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--rose);
+  }
+  .bg-cream .list-clean li::before { background: var(--clay); }
+
+  /* ===== NAVIGATION ===== */
+  .nav {
+    position: fixed;
+    bottom: 2vh;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    padding: 0.6em 1.2em;
+    background: rgba(43,38,32,0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 100px;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .deck:hover .nav, .nav:hover { opacity: 1; }
+  .nav.visible { opacity: 1; }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.15); }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+  .nav-counter {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .nav-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--rose);
+    z-index: 200;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 12px rgba(217,167,160,0.5);
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .slide.active h1,
+  .slide.active h2,
+  .slide.active h3,
+  .slide.active p,
+  .slide.active .label,
+  .slide.active .panel,
+  .slide.active .stat,
+  .slide.active .list-clean li {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: slideIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .slide.active h1 { animation-delay: 0.1s; }
+  .slide.active h2 { animation-delay: 0.15s; }
+  .slide.active h3 { animation-delay: 0.2s; }
+  .slide.active .label { animation-delay: 0.05s; }
+  .slide.active p  { animation-delay: 0.25s; }
+  .slide.active .panel { animation-delay: 0.3s; }
+  .slide.active .panel:nth-child(2) { animation-delay: 0.4s; }
+  .slide.active .panel:nth-child(3) { animation-delay: 0.5s; }
+  .slide.active .list-clean li:nth-child(1) { animation-delay: 0.3s; }
+  .slide.active .list-clean li:nth-child(2) { animation-delay: 0.38s; }
+  .slide.active .list-clean li:nth-child(3) { animation-delay: 0.46s; }
+  .slide.active .list-clean li:nth-child(4) { animation-delay: 0.54s; }
+  .slide.active .list-clean li:nth-child(5) { animation-delay: 0.62s; }
+  .slide.active .list-clean li:nth-child(6) { animation-delay: 0.7s; }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .split, .split-60-40 { grid-template-columns: 1fr; gap: 2vh; }
+    .cards-4 { grid-template-columns: repeat(2, 1fr); }
+    .photo-grid-6 { grid-template-columns: repeat(2, 1fr); }
+    .photo-row { grid-template-columns: 1fr; }
+    .slide { padding: 4vh 5vw; }
+    .photo-single, .map-box { min-height: 25vh; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide, .slide.active h1, .slide.active h2, .slide.active h3,
+    .slide.active p, .slide.active .panel, .photo-grid-6 img,
+    .photo-row img, .slide.active .list-clean li {
+      transition: opacity 0.3s ease !important;
+      animation: none !important;
+      transform: none !important;
+      opacity: 1 !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav-progress" id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1. ТИТУЛ -->
+  <section class="slide active">
+    <div class="bg-photo" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1600&q=80')"></div>
+    <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+      <div class="label">Группа Т-2.9.25 · Климова Полина</div>
+      <h1>Экстремальный туризм</h1>
+      <p class="lead" style="max-width: none; opacity: 0.85;">Вид туризма: экстремальный туризм. Три страны — три философии преодоления.</p>
+    </div>
+  </section>
+
+  <!-- 2. ЧТО ТАКОЕ -->
+  <section class="slide">
+    <div class="bg-color bg-sage"></div>
+    <div class="split-60-40">
+      <div>
+        <div class="label">Определение</div>
+        <h2>Что такое экстремальный туризм</h2>
+        <p class="lead">Вид туризма, связанный с повышенным риском, требующий физической подготовки, специального снаряжения и профессионального сопровождения.</p>
+        <div class="panel" style="margin-top: 2vh;">
+          <h3>Ключевые особенности</h3>
+          <ul class="list-clean">
+            <li>Адреналин и осознанный риск</li>
+            <li>Физическая и техническая подготовка</li>
+            <li>Специализированное снаряжение</li>
+            <li>Непредсказуемая природная среда</li>
+            <li>Опыт вне зоны комфорта</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div class="photo-row" style="grid-template-columns: 1fr 1fr; gap: 0.8vw;">
+          <img src="https://images.unsplash.com/photo-1522163182402-834f871fd851?w=800&q=80" alt="Скалолазание">
+          <img src="https://images.unsplash.com/photo-1533130061792-64b345e4a833?w=800&q=80" alt="Каньонинг">
+          <img src="https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=800&q=80" alt="Сёрфинг" style="grid-column: span 2;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. ПОЧЕМУ -->
+  <section class="slide">
+    <div class="bg-color bg-sky"></div>
+    <div class="split-60-40">
+      <div>
+        <div class="label">Мотивация</div>
+        <h2>Почему выбирают экстрим</h2>
+        <ul class="list-clean">
+          <li>Преодоление себя и личных границ</li>
+          <li>Выброс адреналина и эндорфинов</li>
+          <li>Ощущение свободы и контроля</li>
+          <li>Уникальные истории и опыт</li>
+          <li>Победа над страхом</li>
+          <li>Единение с природой</li>
+        </ul>
+        <div class="panel" style="margin-top: 2vh;">
+          <p style="margin-bottom: 0;">Экстремальный туризм растёт на 10–15% в год. Путешественники ищут не пассивный отдых, а трансформационный опыт и эмоции.</p>
+        </div>
+      </div>
+      <div>
+        <div class="photo-row" style="grid-template-columns: 1fr 1fr; gap: 0.8vw;">
+          <img src="https://images.unsplash.com/photo-1521336575822-6da63fb45455?w=800&q=80" alt="Прыжок">
+          <img src="https://images.unsplash.com/photo-1521673252667-e05da380b252?w=800&q=80" alt="Поход">
+          <img src="https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800&q=80" alt="Параглайдинг" style="grid-column: span 2;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. КЛАССИФИКАЦИЯ -->
+  <section class="slide">
+    <div class="bg-color bg-cream"></div>
+    <div style="width: 100%;">
+      <div class="label">Структура</div>
+      <h2>Классификация видов</h2>
+      <div class="cards-4">
+        <div class="card">
+          <h3>Горные</h3>
+          <p>Альпинизм, трекинг, скалолазание, каньонинг</p>
+        </div>
+        <div class="card">
+          <h3>Водные</h3>
+          <p>Рафтинг, дайвинг, каякинг, сёрфинг</p>
+        </div>
+        <div class="card">
+          <h3>Воздушные</h3>
+          <p>Параглайдинг, скайдайвинг, банджи, дельтаплан</p>
+        </div>
+        <div class="card">
+          <h3>Смешанные</h3>
+          <p>Зиплайн, спелеология, экспедиции</p>
+        </div>
+      </div>
+      <div class="panel" style="margin-top: 2vh;">
+        <p style="margin-bottom: 0;">По сложности — от базового до профессионального. По среде — суша, вода, воздух, их сочетания. По длительности — от часов до многодневных экспедиций.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. НЕПАЛ ИНТРО -->
+  <section class="slide">
+    <div class="bg-photo" style="background-image: url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1600&q=80')"></div>
+    <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+      <div class="label">Страна 1</div>
+      <h1>Непал</h1>
+      <p class="lead" style="max-width: none; opacity: 0.9;">Страна восьмитысячников. Гималаи. Мировой центр альпинизма и трекинга.</p>
+    </div>
+  </section>
+
+  <!-- 6. НЕПАЛ ГЕОГРАФИЯ -->
+  <section class="slide">
+    <div class="bg-color bg-cream"></div>
+    <div class="split">
+      <div>
+        <div class="label">География</div>
+        <h2>Непал: расположение</h2>
+        <div class="map-box" style="min-height: 30vh;">
+          <img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&q=80" alt="Гималаи" style="max-height: 35vh; border-radius: 12px;">
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Ключевые факты</h3>
+          <div class="stats-row">
+            <div class="stat"><div class="stat-value">8 из 14</div><div class="stat-label">восьмитысячников мира</div></div>
+            <div class="stat"><div class="stat-value">8848 м</div><div class="stat-label">высота Эвереста</div></div>
+            <div class="stat"><div class="stat-value">Катманду</div><div class="stat-label">столица</div></div>
+          </div>
+          <p style="margin-top: 1.2em;">Границы с Индией и Китаем. Высоты от 60 м до 8848 м. Мировой центр альпинизма и трекинга.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. НЕПАЛ ВИДЫ -->
+  <section class="slide">
+    <div class="bg-color bg-sky"></div>
+    <div style="width: 100%;">
+      <div class="label">Активности</div>
+      <h2>Непал: виды экстрима</h2>
+      <div class="cards-4">
+        <div class="card"><h3>Трекинг</h3><p>Маршруты к базовым лагерям. Эверест и Аннапурна.</p></div>
+        <div class="card"><h3>Альпинизм</h3><p>Эверест, Лходзе, Макалу. Нужны опыт и акклиматизация.</p></div>
+        <div class="card"><h3>Рафтинг</h3><p>Бхоте-Коси, Сан-Коси. Пороги до 4–5 категории.</p></div>
+        <div class="card"><h3>Параглайдинг</h3><p>Полёты над Покхарой с видом на Гималаи.</p></div>
+      </div>
+      <div class="photo-row" style="grid-template-columns: repeat(3, 1fr);">
+        <img src="https://images.unsplash.com/photo-1518002054494-3a6f94352e9d?w=800&q=80" alt="Эверест">
+        <img src="https://images.unsplash.com/photo-1486911278844-a81c5267e227?w=800&q=80" alt="Аннапурна">
+        <img src="https://images.unsplash.com/photo-1530866495561-507c9faab2ed?w=800&q=80" alt="Рафтинг">
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. ЭВЕРЕСТ -->
+  <section class="slide">
+    <div class="bg-photo" style="background-image: url('https://images.unsplash.com/photo-1518002054494-3a6f94352e9d?w=1600&q=80')"></div>
+    <div style="max-width: 700px;">
+      <div class="label">Трек EBC · 5364 м</div>
+      <h1>Эверест · Базовый лагерь</h1>
+      <div class="panel">
+        <h3>Маршрут</h3>
+        <p>Лука → Намче-Базар → Тенгбоче → Дингбоче → Лобуче → Горакшеп → EBC.</p>
+        <div class="stats-row">
+          <div class="stat"><div class="stat-value">12–14</div><div class="stat-label">дней</div></div>
+          <div class="stat"><div class="stat-value">5364 м</div><div class="stat-label">высота</div></div>
+          <div class="stat"><div class="stat-value">весна</div><div class="stat-label">и осень</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. АННАПУРНА -->
+  <section class="slide">
+    <div class="bg-color bg-cream"></div>
+    <div class="split">
+      <div>
+        <img class="photo-single" src="https://images.unsplash.com/photo-1486911278844-a81c5267e227?w=1000&q=80" alt="Аннапурна">
+      </div>
+      <div>
+        <div class="label">Трек вокруг · 5416 м</div>
+        <h2>Аннапурна</h2>
+        <div class="panel">
+          <h3>Маршрут</h3>
+          <p>Бесисахар → Бхартанг → Чаме → Писанг → Мананг → Муктинатх → Торонг-Ла → Джомсом.</p>
+          <div class="stats-row">
+            <div class="stat"><div class="stat-value">14–18</div><div class="stat-label">дней</div></div>
+            <div class="stat"><div class="stat-value">5416 м</div><div class="stat-label">перевал</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. РАФТИНГ НЕПАЛ -->
+  <section class="slide">
+    <div class="bg-color bg-sky"></div>
+    <div class="split">
+      <div>
+        <img class="photo-single" src="https://images.unsplash.com/photo-1530866495561-507c9faab2ed?w=1000&q=80" alt="Рафтинг">
+      </div>
+      <div>
+        <div class="label">Реки · сезон</div>
+        <h2>Рафтинг в Непале</h2>
+        <div class="panel">
+          <h3>Маршруты</h3>
+          <ul class="list-clean">
+            <li>Бхоте-Коси — пороги 3–4 категории, 2–3 дня</li>
+            <li>Сан-Коси — одна из лучших рек мира</li>
+            <li>Карнали — дикая и удалённая, для опытных</li>
+          </ul>
+          <p style="margin-top: 1em; margin-bottom: 0;"><strong>Сезон:</strong> сентябрь–май. Летом высокий уровень воды из-за муссонов.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. КАТМАНДУ -->
+  <section class="slide">
+    <div class="bg-color bg-cream"></div>
+    <div class="split">
+      <div>
+        <div class="label">Город старта</div>
+        <h2>Катманду</h2>
+        <div class="panel">
+          <h3>Роль города</h3>
+          <p>Отсюда начинаются все экспедиции. Здесь оформляются пермиты и снаряжение.</p>
+          <h3 style="margin-top: 1em;">Ключевые объекты</h3>
+          <ul class="list-clean">
+            <li>Площадь Дурбар</li>
+            <li>Ступа Боднатх</li>
+            <li>Ступа Сваямбунатх</li>
+            <li>Храм Пашупатинатх</li>
+            <li>Район Тамель</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <img class="photo-single" src="https://images.unsplash.com/photo-1558799401-1dcba79834c2?w=1000&q=80" alt="Катманду">
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. ШВЕЙЦАРИЯ ИНТРО -->
+  <section class="slide">
+    <div class="bg-photo" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80')"></div>
+    <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+      <div class="label">Страна 2</div>
+      <h1>Швейцария</h1>
+      <p class="lead" style="max-width: none; opacity: 0.9;">Альпы. Параглайдинг.
